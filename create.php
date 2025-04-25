@@ -1,33 +1,24 @@
 <?php
-include('db.php');
+include 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
+    $title = $_POST['title'];
     $description = $_POST['description'];
+    $location = $_POST['location'];
 
-    $stmt = $pdo->prepare("INSERT INTO items (name, description) VALUES (?, ?)");
-    $stmt->execute([$name, $description]);
+    $sql = "INSERT INTO jobs (title, description, location) VALUES ('$title', '$description', '$location')";
 
-    header("Location: index.php");
-    exit();
+    if ($conn->query($sql) === TRUE) {
+        echo "New job created successfully";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Pridať položku</title>
-</head>
-<body>
-    <h1>Pridať novú položku</h1>
-    <form action="create.php" method="POST">
-        <label for="name">Názov:</label>
-        <input type="text" name="name" id="name" required><br>
-        <label for="description">Popis:</label>
-        <textarea name="description" id="description" required></textarea><br>
-        <button type="submit">Pridať</button>
-    </form>
-    <a href="index.php">Späť</a>
-</body>
-</html>
+<form method="POST" action="">
+    <input type="text" name="title" placeholder="Job Title" required>
+    <textarea name="description" placeholder="Job Description" required></textarea>
+    <input type="text" name="location" placeholder="Job Location" required>
+    <button type="submit">Add Job</button>
+</form>

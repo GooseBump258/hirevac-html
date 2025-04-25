@@ -1,13 +1,12 @@
 <?php
-$host = "localhost";   // alebo tvoj server
-$dbname = "simple_crud";
-$username = "root";    // prihlasovacie údaje
-$password = "";        // heslo
+$servername = "localhost";
+$username = "root"; // vaše MySQL meno
+$password = ""; // vaše MySQL heslo
+$dbname = "hirevac";
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo "Pripojenie k databáze zlyhalo: " . $e->getMessage();
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 ?>
