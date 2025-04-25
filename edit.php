@@ -1,44 +1,73 @@
 <?php
-include('db.php');
+// Pripojenie k databáze
+include 'db.php';
 
+// Skontroluj, či je ID prácu, ktoré sa má aktualizovať, prítomné v URL
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 
-    $stmt = $pdo->prepare("SELECT * FROM items WHERE id = ?");
-    $stmt->execute([$id]);
-    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Načítanie aktuálnych údajov pre dané ID
+    $sql = "SELECT * FROM jobs WHERE id = $id";
+    $result = $conn->query($sql);
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $name = $_POST['name'];
-        $description = $_POST['description'];
-
-        $stmt = $pdo->prepare("UPDATE items SET name = ?, description = ? WHERE id = ?");
-        $stmt->execute([$name, $description, $id]);
-
-        header("Location: index.php");
+    if ($result->num_rows > 0) {
+        // Ak je nájdený záznam, vyplníme formulár
+        $row = $result->fetch_assoc();
+        $jobTitle = $row['job_title'];
+        $jobDescription = $row['job_description'];
+        $jobLocation = $row['job_location'];
+    } else {
+        echo "Záznam neexistuje.";
         exit();
     }
 } else {
-    echo "Položka neexistuje.";
+    echo "Neplatné ID.";
     exit();
 }
+
+// Ak je odoslaný formulár, aktualizujeme údaje
+if (isset($_POST['submit'])) {
+    $jobTitle = $_POST['job_title'];
+    $jobDescription = $_POST['job_description'];
+    $jobLocation = $_POST['job_location'];
+
+    // SQL príkaz na aktualizáciu
+    $sqlUpdate = "UPDATE jobs SET job_title = '$jobTitle', job_description = '$jobDescription', job_location = '$jobLocation' WHERE id = $id";
+
+    if ($conn->query($sqlUpdate) === TRUE) {
+        // Po úspešnej aktualizácii presmeruj späť na index.php
+        header("Location: index.php");
+        exit();
+    } else {
+        echo "Chyba pri aktualizácii: " . $conn->error;
+    }
+}
+
+$conn->close();
 ?>
 
+<!-- HTML formulár na aktualizáciu -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upraviť položku</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Job</title>
 </head>
 <body>
-    <h1>Upraviť položku</h1>
-    <form action="edit.php?id=<?php echo $item['id']; ?>" method="POST">
-        <label for="name">Názov:</label>
-        <input type="text" name="name" id="name" value="<?php echo $item['name']; ?>" required><br>
-        <label for="description">Popis:</label>
-        <textarea name="description" id="description" required><?php echo $item['description']; ?></textarea><br>
-        <button type="submit">Uložiť</button>
+    <h2>Aktualizovať prácu</h2>
+
+    <form method="POST">
+        <label for="job_title">Názov práce:</label>
+        <input type="text" name="job_title" value="<?php echo $jobTitle; ?>" required><br><br>
+
+        <label for="job_description">Popis práce:</label>
+        <textarea name="job_description" required><?php echo $jobDescription; ?></textarea><br><br>
+
+        <label for="job_location">Lokalita:</label>
+        <input type="text" name="job_location" value="<?php echo $jobLocation; ?>" required><br><br>
+
+        <button type="submit" name="submit">Aktualizovať</button>
     </form>
-    <a href="index.php">Späť</a>
 </body>
 </html>
